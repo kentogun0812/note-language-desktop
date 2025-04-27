@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>Hello World!</title>
+    <link rel="stylesheet" href="index.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script defer src="render.js"></script>
+    <style>
+        .content {
+            font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Osaka, "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+        }
+
+        .logo-app {
+            width: 30%;
+            height: auto;
+        }
+
+        #submit_form {
+            width: 90%;
+            border: 1px solid white;
+            margin: 20px auto 0;
+            padding: 1em;
+            -moz-border-radius: 10px;
+            -webkit-border-radius: 10px;
+            text-align: center;
+        }
+
+        input[type=text] {
+            display: block;
+            margin: 0 auto 1em auto;
+            width: 60%;
+            border: 2px solid #818181;
+            border-radius: 10px;
+            padding: 5px;
+            font-size: 20px;
+        }
+
+        #tableLanguage th {
+            text-align: center;
+            vertical-align: middle;
+            font-size: 20px;
+        }
+
+        #tableLanguage td {
+            text-align: center;
+            vertical-align: middle;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body class="content">
+
+<img src="logo_goukaku.jpeg" class="logo-app" alt="合格">
+<div id="submit_form">
+    <form class="form-horizontal form-Language">
+        <input type="text" class="form-control" id="lagID" style="display: none">
+        <div class="form-group">
+            <input type="text" class="form-control" id="vocabulary" placeholder="漢字を入力してください。" name="vocabulary"
+                   required>
+        </div>
+        <div class="form-group">
+            <input type="text" class="form-control" id="phonetic" placeholder="ひらがなを入力してください。" name="phonetic"
+                   required>
+        </div>
+        <div class="form-group">
+            <input type="text" class="form-control" id="mean" placeholder="意味を入力してください。" name="mean" required>
+        </div>
+        <div class="form-group">
+            <input type="text" class="form-control" id="exa_sentence" placeholder="例文を入力してください。" name="exa_sentence" required>
+        </div>
+        <div class="form-group">
+            <input type="text" class="form-control" id="exa_mean" placeholder="例文の意味を入力してください。" name="exa_mean" required>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary" onclick="onSubmit()">登録</button>
+            <button type="reset" class="btn btn-warning">レセット</button>
+            <button type="submit" class="btn btn-success" onclick="onUpdate()">更新</button>
+        </div>
+    </form>
+</div>
+<div class="form-group has-search">
+    <input type="text" class="form-control" placeholder="検索" id="search">
+</div>
+<table class="table table-bordered table-fixed table-condensed" id="tableLanguage">
+    <thead>
+    <tr>
+        <th>数</th>
+        <th>漢字</th>
+        <th>ひらがな</th>
+        <th>意味</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+</table>
+
+</body>
+
+<script>
+    window.onload = function () {
+        console.log("READY!!!!");
+        loadData(generateDataTable, "");
+        initEventSearchData();
+        notification();
+    };
+
+    function generateDataTable(data) {
+        let html = '';
+        for (let index = 0; index < data.length; index++) {
+            html += '<tr class="clickableRow">';
+            html += '<td>';
+            html += data[index].lagID;
+            html += '</td>';
+            html += '<td>';
+            html += data[index].vocabulary;
+            html += '</td>';
+            html += '<td>';
+            html += data[index].phonetic;
+            html += '</td>';
+            html += '<td>';
+            html += data[index].mean;
+            html += '</td>';
+            html += '<td>';
+            if (data[index].memorized === 1) {
+                html += '<button type="submit" class="btn btn-secondary" onclick="onBookmark(' + data[index].lagID + ',' + data[index].memorized + ')">覚えた</button>';
+            } else {
+                html += '<button type="submit" class="btn btn-success" onclick="onBookmark(' + data[index].lagID + ',' + data[index].memorized + ')">覚えない</button>';
+            }
+            html += '</td>';
+            html += '</tr>';
+        }
+        document.querySelector('#tableLanguage > tbody').innerHTML = html;
+        initEventSelectRowTable();
+    }
+
+    function onSubmit() {
+        let lagID = document.getElementById("lagID").value;
+        if (lagID !== undefined && lagID !== "") {
+            alert("更新してください。");
+            return;
+        }
+        let vocabulary = document.getElementById("vocabulary").value;
+        let phonetic = document.getElementById("phonetic").value;
+        let mean = document.getElementById("mean").value;
+        let exa_sentence = document.getElementById("exa_sentence").value;
+        let exa_mean = document.getElementById("exa_mean").value;
+        insertData(vocabulary, phonetic, mean, exa_sentence, exa_mean);
+    }
+
+    function onUpdate() {
+        let lagID = document.getElementById("lagID").value;
+        if (lagID === undefined || lagID === "") {
+            alert("登録してください。");
+            return;
+        }
+        let vocabulary = document.getElementById("vocabulary").value;
+        let phonetic = document.getElementById("phonetic").value;
+        let mean = document.getElementById("mean").value;
+        updateData(lagID, vocabulary, phonetic, mean);
+    }
+
+    function initEventSelectRowTable() {
+        let table = document.getElementById("tableLanguage");
+        if (table) {
+            for (let i = 0; i < table.rows.length; i++) {
+                table.rows[i].onclick = function () {
+                    tableText(this);
+                };
+            }
+        }
+
+        function tableText(tableRow) {
+            let lagID = tableRow.childNodes[0].innerHTML;
+            let vocabulary = tableRow.childNodes[1].innerHTML;
+            let phonetic = tableRow.childNodes[2].innerHTML;
+            let mean = tableRow.childNodes[3].innerHTML;
+            document.getElementById("lagID").value = lagID;
+            document.getElementById("vocabulary").value = vocabulary;
+            document.getElementById("phonetic").value = phonetic;
+            document.getElementById("mean").value = mean;
+            document.getElementById("exa_sentence").value = "なし";
+            document.getElementById("exa_mean").value = "なし";
+        }
+    }
+
+    function initEventSearchData() {
+        let searchInput = document.getElementById('search');
+        searchInput.addEventListener('input', searchData);
+
+        function searchData(e) {
+            loadData(generateDataTable, e.target.value);
+        }
+    }
+
+    function onBookmark(lagID, isMemorized) {
+        bookMarkVocabulary(lagID, isMemorized);
+        window.location.reload();
+    }
+</script>
+</html>

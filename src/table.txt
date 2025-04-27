@@ -1,0 +1,7 @@
+CREATE TABLE language (
+    lagID int,
+    vocabulary varchar(255),
+    phonetic varchar(255),
+    mean varchar(255),
+    memorized bit(1)
+);
